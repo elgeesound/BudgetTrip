@@ -5,6 +5,7 @@ import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
 import Menu from 'material-ui/Menu';
 import MenuItem from 'material-ui/MenuItem';
+import { NavLink } from 'react-router-dom';
 
 const style = {
   display: 'flex',
@@ -23,7 +24,6 @@ class Header extends React.Component {
 
   handleTouchTap = (event) => {
     event.preventDefault();
-
     this.setState({
       open: true,
       anchorEl: event.currentTarget
@@ -58,7 +58,9 @@ class Header extends React.Component {
           <Paper style={style}>
             <Menu>
               <MenuItem primaryText="Trip History" />
-              <MenuItem primaryText="User Profile" />
+              <MenuItem><NavLink activeClassName='active_nav' to='/profile'>
+                User profile
+              </NavLink></MenuItem>
               <MenuItem onClick={(e) => {this.handleLogout(e)}} primaryText="Logout" />
             </Menu>
           </Paper>

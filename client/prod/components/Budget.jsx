@@ -21,6 +21,7 @@ class Budget extends React.Component {
       moneyLeft: 0,
       moneySpent: 0,
       activities: [],
+      negative: false,
       value: 0,
       fields: {},
       table: {
@@ -68,6 +69,9 @@ class Budget extends React.Component {
     let self = this;
     let target = e.target.id
     let targetValue = e.target.value
+    if (targetValue === "") {
+      targetValue = 0;
+    }
     clearTimeout(this.timer);
 
     this.timer = setTimeout(function() {
@@ -79,11 +83,20 @@ class Budget extends React.Component {
   handlePriceInput = (target, targetValue, newVal) => {
     // need to handle backspaced no value.
       // might need to have a prev val state and a new val state
-    let fields = Object.assign({}, this.state.fields);
-    fields[target] = newVal;
-    this.setState({fields})
-    if (parseFloat(targetValue === NaN)) {
-      this.setState({moneySpent: 0 })
+    if (!this.state.fields[target]) {
+      let fields = Object.assign({}, this.state.fields);
+      fields[target] = [targetValue];
+      this.setState({fields})
+    } else {
+      let adjustedMoneyLeft = parseFloat(this.state.moneyLeft) + parseFloat(this.state.fields[target][this.state.fields[target].length-1]);
+      let adjustedMoneySpent = parseFloat(this.state.moneySpent) - parseFloat(this.state.fields[target][this.state.fields[target].length-1]);
+      this.setState({
+        moneyLeft: adjustedMoneyLeft,
+        moneySpent: adjustedMoneySpent
+      })
+      let fields = Object.assign({}, this.state.fields);
+      fields[target] = this.state.fields[target].concat([targetValue]);
+      this.setState({fields});
     }
 
     this.setState({
@@ -92,9 +105,20 @@ class Budget extends React.Component {
     }, function() {
       this.setState({moneyLeft: this.state.budgetTotal - this.state.moneySpent})
     });
+
+    if (this.state.moneyLeft < 0) {
+      this.setState({
+        negative: true
+      });
+    }
   };
 
   render(){
+    let negativeStyle = {
+      color: this.state.negative ? 'red' : 'black',
+      textAlign: 'center'
+    }
+
     return (
       <div>
         <Table
@@ -110,7 +134,7 @@ class Budget extends React.Component {
             enableSelectAll={this.state.table.enableSelectAll}
             >
             <TableRow>
-              <TableHeaderColumn colSpan="3" tooltip="BudgetTrip" style={{textAlign: 'center'}}>{<h1>{`Total Budget: $${this.state.budgetTotal} Total Spent: $${this.state.moneySpent} Budget Left: $${this.state.moneyLeft}`}</h1>}</TableHeaderColumn>
+              <TableHeaderColumn style={negativeStyle} colSpan="3" tooltip="BudgetTrip">{<h1>{`Total Budget: $${this.state.budgetTotal} Total Spent: $${this.state.moneySpent} Budget Left: $${this.state.moneyLeft}`}</h1>}</TableHeaderColumn>
             </TableRow>
             <TableRow >
               <TableHeaderColumn>Name</TableHeaderColumn>
@@ -147,16 +171,3 @@ class Budget extends React.Component {
 }
 
 export default Budget;
-
-
-
-
-// let x = [] <----
-// concat
-// x.concat([{'id-1234': 22}]);
-//    0,     1
-// x.concat([{'id-1235', 11}]);
-//   2,         3
-// concat
-
-// x = [{'id-1234': 22} {'id-1235': 11}]
